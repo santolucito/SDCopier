@@ -80,7 +80,7 @@ int main()
     sd_card_t *sd_card_p2 = sd_get_by_num(1);
     assert(sd_card_p2);
     char const *drive_prefix2 = sd_get_drive_prefix(sd_card_p2);
-    FRESULT fr2 = f_mount(&sd_card_p->state.fatfs, drive_prefix2, 1);
+    FRESULT fr2 = f_mount(&sd_card_p2->state.fatfs, drive_prefix2, 1);
     if (FR_OK != fr2)
     {
         printf("f_mount error: %s (%d)\n", FRESULT_str(fr2), fr2);
@@ -91,7 +91,44 @@ int main()
     if (!write_file(buf2))
         exit(2);
 
-    puts("Goodbye, world!");
+    // Open the source file for reading
+    FIL src_file;
+    fr = f_open(&src_file, buf, FA_READ);
+    if (fr != FR_OK)
+    {
+        printf("Failed to open source file for reading: %s (%d)\n", FRESULT_str(fr), fr);
+        exit(2);
+    }
+
+    // Open the destination file for writing
+    char buf3[128];
+    snprintf(buf3, sizeof buf3, "%s/file%d.txt", drive_prefix2, 0);
+    FIL dest_file;
+    fr = f_open(&dest_file, buf3, FA_OPEN_APPEND | FA_WRITE);
+    if (fr != FR_OK)
+    {
+        printf("Failed to open destination file for writing: %s (%d)\n", FRESULT_str(fr), fr);
+        exit(3);
+    }
+
+    // Read from the source file and write to the destination file
+    UINT br, bw;
+    while (f_read(&src_file, buf, sizeof(buf), &br) == FR_OK && br > 0)
+    {
+        f_write(&dest_file, buf, br, &bw);
+        if (bw != br)
+        {
+            printf("Error writing to destination file\n");
+            exit(4);
+        }
+    }
+
+    // Close the files
+    f_close(&src_file);
+    f_close(&dest_file);
+
+    f_unmount(drive_prefix);
+    f_unmount(drive_prefix2);
 
     while (true)
     {
