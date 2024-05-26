@@ -1,9 +1,3 @@
 A repo that has the code for an SD Copier.
 
 It runs on a RP2040 (currently using RP2040-LCP-0.96) with the Adafruit SDIO/+SPI SD card adapter.
-
-The screen on RP2040-LCP-0.96 takes up some of the SPI pins, so if we stick with SPI we can't use this board (and its screen anyway).
-
-Hoping to switch to SDIO anyway, and there is a chance the GPIOs will line up in a way that allows us to still use the screen. 
-If not, it is not a big deal, we will just get a rp2040 board without a pre-installed screen and add a screen ourselves.
-This might even be better anyway since we might want a different screen.
